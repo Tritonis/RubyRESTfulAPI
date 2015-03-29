@@ -18,7 +18,15 @@ baseURL = 'http://api.reimaginebanking.com:80'
 
 =begin
 Testing data
-Customer ID: 5516c07ba520e0066c9ac53c	
+Customer ID: 5516c07ba520e0066c9ac53b
+^That customer's bank account ID: 55173197c5749d260bb8d151	
+More cust ids w/ account ids:
+cust: 5516c07ba520e0066c9ac53b
+acct: 55175197c5749d260bb8d159
+
+cust: 5516c07ba520e0066c9ac53b
+acct: 5517614cc5749d260bb8d160
+
 Json for updating cusomter data: 	
 myJson ='{
  		 "address": {
@@ -30,6 +38,34 @@ myJson ='{
   		}
 	}'
 
+Json for updating Account data:
+{
+	"type":"Savings",
+	"nickname":"test",
+	"rewards":10,
+	"balance":1000,
+	"customer":"5516c07ba520e0066c9ac53b",
+	"_id":"55173197c5749d260bb8d151"
+	}
+
+Json for creating a new account:
+{
+  "type": "Savings",
+  "nickname": "TomP",
+  "rewards": 2,
+  "balance": 300
+}
+
+Json for creating a new bill: 
+{
+  "status": "",
+  "payment_date": "",
+  "recurring_date": 0,
+  "payment_amount": 0
+}
+
+Json for creating a new transaction
+
 =end
 	json ='{
  		 "address": {
@@ -40,6 +76,23 @@ myJson ='{
     	   "zip": "16801"
   		}
 	}'
+
+	acctJson =	'{
+	"nickname":"myTest"
+	}'
+
+	newAcctJson = '{
+  "type": "",
+  "nickname": "",
+  "rewards": 0,
+  "balance": 0
+}'
+
+	newBillJson = '{
+  "status": "Pending",
+  "payment_amount": 10
+}'
+
 #GET requests
 
 def getATMS
@@ -75,6 +128,8 @@ def getCustAccts(custID)
 	data = resp.body
 	puts(data)
 end
+#getCustAccts('5516c07ba520e0066c9ac53b')
+
 #get all 
 def getBills(custID)
 	url = "http://api.reimaginebanking.com:80/customers/#{custID}/bills?key=#{APIkey}"
@@ -121,6 +176,9 @@ def getAccBills(accID)
 	data = resp.body
 	puts(data)
 end
+
+#getAccBills('55173197c5749d260bb8d151')
+
 #get a specific bill from a specific account
 def findAccBill(accID, billID)
 	url ="http://api.reimaginebanking.com:80/accounts/#{accID}/bills/#{billID}?key=#{APIkey}"
@@ -181,8 +239,64 @@ def updateCustomer(custID, json)
 	puts(http.request(request))
 end
 
-updateCustomer('5516c07ba520e0066c9ac53b', json)
-getCustomer('5516c07ba520e0066c9ac53b')
+# updateCustomer('5516c07ba520e0066c9ac53b', json)
+# getCustomer('5516c07ba520e0066c9ac53b')
+
+#updates an account's nickname by id with given json data. 
+def updateAccount(acctID, json)
+	url = "http://api.reimaginebanking.com:80/accounts/#{acctID}?key=#{APIkey}"
+	uri = URI.parse(url)
+	myHash = JSON.parse(json)
+	puts(myHash)
+	http = Net::HTTP.new(uri.host, uri.port)
+	puts(uri.host)
+	puts(uri.port)
+	key = "?key=#{APIkey}"
+	puts(uri.path+key)
+	request = Net::HTTP::Put.new(uri.path+key)
+	request.set_form_data(myHash)
+	http.request(request)
+	puts(http.request(request))
+end
+
+
+#updateAccount('55173197c5749d260bb8d151', acctJson)
+
+#POST requests
+
+#creates a new account
+def createAcct(custID, json)
+	url = "http://api.reimaginebanking.com:80/customers/#{custID}/accounts?key=#{APIkey}"
+	uri = URI.parse(url)
+	http = Net::HTTP.new(uri.host, uri.port)
+	puts(uri.host)
+	puts(uri.port)
+	key = "?key=#{APIkey}"
+	puts(uri.path+key)
+	myHash = JSON.parse(json)
+	puts(myHash)
+	puts(Net::HTTP.post_form(uri, myHash))
+#	getCustAccts('5516c07ba520e0066c9ac53b')
+end
+getCustAccts("5516c07ba520e0066c9ac53b")
+
+#createAcct('5516c07ba520e0066c9ac53b', newAcctJson)
+
+#create a new bill on an associated account ID
+# def createBill(acctID, json)
+# 	url = "http://api.reimaginebanking.com:80/accounts/#{acctID}/bills?key=#{APIkey}"
+# 	uri = URI.parse(url)
+# 	http = Net::HTTP.new(uri.host, uri.port)
+# 	puts(uri.host)
+# 	puts(uri.port)
+# 	key = "?key=#{APIkey}"
+# 	puts(uri.path+key)
+# 	myHash = JSON.parse(json)
+# 	puts(myHash)
+# 	puts(Net::HTTP.post_form(uri, myHash))
+# 	puts(getAccBills('55173197c5749d260bb8d151'))
+# end
+# createBill("55173197c5749d260bb8d151", newBillJson)
 
 #DELETE requests
 
