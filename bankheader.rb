@@ -18,6 +18,8 @@ baseURL = 'http://api.reimaginebanking.com:80'
 
 =begin
 Testing data
+DELETION ACCT ID(because I don't want to fucking
+break all the other testing data): 546cd56d04783a02616859c9
 Customer ID: 5516c07ba520e0066c9ac53b
 ^That customer's bank account ID: 55173197c5749d260bb8d151	
 More cust ids w/ account ids:
@@ -64,7 +66,12 @@ Json for creating a new bill:
   "payment_amount": 0
 }
 
-Json for creating a new transaction
+Json for creating a new transaction:
+{
+  "transaction type": "cash",
+  "payee id": "5517614cc5749d260bb8d160",
+  "amount": 50
+}
 
 =end
 	json ='{
@@ -91,6 +98,12 @@ Json for creating a new transaction
 	newBillJson = '{
   "status": "Pending",
   "payment_amount": 10
+}'
+
+	newTranJson = '{
+  "transaction type": "cash",
+  "payee id": "5517614cc5749d260bb8d160",
+  "amount": 50
 }'
 
 #GET requests
@@ -298,16 +311,64 @@ getCustAccts("5516c07ba520e0066c9ac53b")
 # end
 # createBill("55173197c5749d260bb8d151", newBillJson)
 
+#create a new transaction between 2 accounts
+def createTransaction(toAcc, json)
+	url = "http://api.reimaginebanking.com:80/accounts/#{toAcc}/transactions?key=#{APIkey}"
+	uri = URI.parse(url)
+	http = Net::HTTP.new(uri.host, uri.port)
+	puts(uri.host)
+	puts(uri.port)
+	key = "?key=#{APIkey}"
+	puts(uri.path+key)
+	myHash = JSON.parse(json)
+	puts(myHash)
+	Net::HTTP.post_form(uri, myHash)
+	getAccTransactions('55175197c5749d260bb8d159')
+end
+#createTransaction('5516c07ba520e0066c9ac53b', newTranJson)
+
+
 #DELETE requests
 
 #delete a bill by id from a given account
 def deleteBill(accID, billID)
 	url = "http://api.reimaginebanking.com:80/accounts/#{accID}/bills/#{billID}?key=#{APIkey}"
-	http = Net::HTTP.new(url.host, url.port)
-	req = Net::HTTP::Delete.new(url.path)
-	res = http.request(req)
+	uri = URI.parse(url)
+	http = Net::HTTP.new(uri.host, uri.port)
+	key="?key=#{APIkey}"
+	request = Net::HTTP::Delete.new(uri.path+key)
+	http.request(request)
+	puts('in del bill')
+	puts(http.request(request))
 end
 
+deleteBill('546cd56d04783a02616859c9', '546cd56d04783a02616859c9')
+
+#delete a given account with some ID
+def deleteAcc(accID)
+	url = "http://api.reimaginebanking.com:80/accounts/#{accID}?key=#{APIkey}"
+	uri = URI.parse(url)
+	http = Net::HTTP.new(uri.host, uri.port)
+	key="?key=#{APIkey}"
+	request = Net::HTTP::Delete.new(uri.path+key)
+	http.request(request)
+	puts('in del acc')
+	puts(http.request(request))
+end
+
+#deleteAcc('546cd56d04783a02616859c9')
+
+def deleteTransaction(accID, transID)
+	url = "http://api.reimaginebanking.com:80/accounts/#{accID}/transactions/#{transID}?key=#{APIkey}"
+	uri = URI.parse(url)
+	http = Net::HTTP.new(uri.host, uri.port)
+	key="?key=#{APIkey}"
+	request = Net::HTTP::Delete.new(uri.path+key)
+	http.request(request)
+	puts('in del transaction')
+	puts(http.request(request))
+end
+deleteTransaction('546cd56d04783a02616859c9', '546cd56d04783a02616859c9')
 
 
 def setAPIKey(key)
